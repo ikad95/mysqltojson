@@ -1,0 +1,62 @@
+#!/usr/bin/env python
+
+#moulik adak
+#12th june 2017
+
+import json,pymysql,pprint,sys
+
+def checkUsage():
+	print "Dump sql to json file"
+	print "Usage : \n\t" + sys.argv[0].split("/")[-1] + " -d yourDB -t yourTable"
+	print "\t--help/-h : help \n\t-d : database \n\t-t : table"
+	print "Optional arguments :"
+	print "\t-host : hostname (default localhost)\n\t-u : user (default root)\n\t-p : password (default hello)\n\t-c : character set (default utf8)\n\t-o : output file(default table name)"
+	sys.exit(1)
+if(len(sys.argv)<3):
+        checkUsage()
+args={}
+
+valid_args=['-d','-t','-h','--help','-h','-p','-u','-c','-o','--host']
+#def args
+args['--host'] = "localhost"
+args['-c']="utf8"
+args['-u']="root"
+args['-p']="hello"
+
+for i in range(1,len(sys.argv),2):
+	if sys.argv[i] not in valid_args:
+		checkUsage()
+		sys.exit(1)
+	args[sys.argv[i]] = sys.argv[i+1]
+
+
+op=[]
+js=[]
+
+
+connection = pymysql.connect(host=args['--host'],
+                     user=args['-u'],
+                     password=args['-p'],
+                     db=args["-d"],
+		     charset=args["-c"]
+		)
+try:
+	with connection.cursor() as cursor:
+		sql = "SELECT * FROM "+args["-t"]
+		cursor.execute(sql)
+	fields = [i[0] for i in cursor.description]
+	connection.commit()
+	results = cursor.fetchall()
+	for result in results:
+		i=0
+		o={}
+		for x in result:
+			o[fields[i]] = x
+			i+=1
+		js.append(o)
+finally:
+	connection.close()
+if '-o' not in args:
+	args['-o']=args['-t']
+with open(args['-o']+'.json', 'wb') as outfile:
+	json.dump(js,outfile)
