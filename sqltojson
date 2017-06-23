@@ -3,7 +3,7 @@
 #moulik adak
 #12th june 2017
 
-import json,pymysql,pprint,sys
+import json,pymysql,sys
 
 def checkUsage():
 	print "Dump sql to json file"
